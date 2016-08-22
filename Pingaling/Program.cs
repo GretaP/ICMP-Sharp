@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.NetworkInformation;
 using System.Threading;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Pingaling
 {
@@ -23,53 +25,67 @@ namespace Pingaling
             Ping tweetie = new Ping();
             string exitresponse = string.Empty;
             int timeout = 1000;
+            string url = args[0];
 
-            do
+
+            //Reply from 52.40.4.203: bytes=32 time=51ms TTL=43
+            // takes string and shows the ip address resolution
+            /*
+     Ping statistics for 52.40.4.203:
+     Packets: Sent = 4, Received = 4, Lost = 0(0 % loss),
+ Approximate round trip times in milli - seconds:
+    Minimum = 49ms, Maximum = 59ms, Average = 52ms
+   */
+
+            Console.WriteLine($"Pinging {url} with BLAH bytes of data");
+            try
             {
-                Console.WriteLine("Please enter a URL or IP address to ping");
-                string url = args[0];
-                //string url = Console.ReadLine();
-                //Console.WriteLine($"PING {url}");
 
-                try
+                for (int i = 0; i < 5; i++)
                 {
-                    for (int i = 0; i < 10; i++)
+
+                    if (i == 0)
                     {
-                        PingReply reply = tweetie.Send(url, timeout);
-                        if (reply.Status == IPStatus.Success)
-                        {                             
-                            Console.WriteLine($"Pinging: {reply.Address.ToString()} : Send # {i}");
-                            Console.WriteLine($"Round trip time: {reply.RoundtripTime} ... TTl: {reply.Options.Ttl}");
-                            //buffer??? >.>
-                            Console.WriteLine($"Buffer length:{reply.Buffer.Length}");
-                            Console.WriteLine("\n\n");
-                            Thread.Sleep(timeout);
-                            
-                        }
-                        if (reply.Status == IPStatus.TimedOut) 
-                        {
-                            Console.WriteLine($"Ping to {url} timed out");
-                        }
+                        IPHostEntry host;
+                        host = Dns.GetHostEntry(url);
+                        Console.WriteLine($"The url {url} resolves to {host.AddressList[0]}");
+                    }
+                    PingReply reply = tweetie.Send(url, timeout);
+                    if (reply.Status == IPStatus.Success)
+                    {
+                        //time amount, bytes in package                  
+                        Console.WriteLine($"Reply from: {reply.Address.ToString()}: Send # {i}");
+                        Console.WriteLine($"Time: {reply.RoundtripTime} ... TTl: {reply.Options.Ttl}");
+                        //buffer??? >.>
+                        Console.WriteLine($"Buffer length:{reply.Buffer.Length}");
+                        Console.WriteLine("\n\n");
+                        Thread.Sleep(timeout);
+
+                    }
+                    if (reply.Status == IPStatus.TimedOut)
+                    {
+                        Console.WriteLine($"Ping to {url} timed out");
                     }
                 }
-                catch (PingException e)
+            }
+            catch (PingException e)
+            {
+                if (e.InnerException == null)
                 {
-                    if (e.InnerException == null)
-                    {
-                        Console.WriteLine("Null error");
-                    }
-                    Console.WriteLine($"Error: Ping exception for: {url}");
-                    Console.WriteLine(e.InnerException);
+                    Console.WriteLine("Null error");
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"other exception: {e}");
-                }
-                           
-                Console.WriteLine("Type \"e\" to exit, anything else to try again");
-                exitresponse = Console.ReadLine();
+                Console.WriteLine($"Error: Ping exception for: {url}");
+                Console.WriteLine(e.InnerException);
+            }
+            catch (SocketException)
+            {
+                Console.WriteLine($"Error: Ping request could not find host {url}.  Please check the name and try again.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"other exception: {e}");
+            }
 
-            } while (exitresponse !="e");
 
             Console.Write("oh hi. You are the weakest link.  Goodbye!");
             Console.ReadLine();
