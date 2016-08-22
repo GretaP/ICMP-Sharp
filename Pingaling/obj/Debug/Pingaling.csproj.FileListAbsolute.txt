@@ -1,0 +1,6 @@
+c:\users\greta_000\documents\visual studio 2015\Projects\Pingaling\Pingaling\bin\Debug\Pingaling.exe.config
+c:\users\greta_000\documents\visual studio 2015\Projects\Pingaling\Pingaling\bin\Debug\Pingaling.exe
+c:\users\greta_000\documents\visual studio 2015\Projects\Pingaling\Pingaling\bin\Debug\Pingaling.pdb
+c:\users\greta_000\documents\visual studio 2015\Projects\Pingaling\Pingaling\obj\Debug\Pingaling.csprojResolveAssemblyReference.cache
+c:\users\greta_000\documents\visual studio 2015\Projects\Pingaling\Pingaling\obj\Debug\Pingaling.exe
+c:\users\greta_000\documents\visual studio 2015\Projects\Pingaling\Pingaling\obj\Debug\Pingaling.pdb
