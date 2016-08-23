@@ -14,72 +14,66 @@ namespace Pingaling
     {
         static void Main(string[] args)
         {
+            if (args.Length == 0)
+            {
+                Console.WriteLine("null error");
+                Environment.Exit(1);
+            }
 
-            /*testing variables
-            //string url = ("52.40.4.203");
-            //string url= ("gretaparks.com");
-            //string url = ("foobarislalalalaa.c");
-            */
-
-            //define variables
             Ping tweetie = new Ping();
-            string exitresponse = string.Empty;
             int timeout = 1000;
             string url = args[0];
+            int packetloss = 0;
+            int packethaz = 0;
+            int packetsent = 0;
+            int count = 5;
 
-
-            //Reply from 52.40.4.203: bytes=32 time=51ms TTL=43
-            // takes string and shows the ip address resolution
-            /*
-     Ping statistics for 52.40.4.203:
-     Packets: Sent = 4, Received = 4, Lost = 0(0 % loss),
- Approximate round trip times in milli - seconds:
-    Minimum = 49ms, Maximum = 59ms, Average = 52ms
-   */
-
-            Console.WriteLine($"Pinging {url} with BLAH bytes of data");
             try
             {
-
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < count; i++)
                 {
-
+                    IPHostEntry host;
+                    host = Dns.GetHostEntry(url);
+                    PingReply reply = tweetie.Send(url, timeout);
+                    packetsent++;
                     if (i == 0)
                     {
-                        IPHostEntry host;
-                        host = Dns.GetHostEntry(url);
-                        Console.WriteLine($"The url {url} resolves to {host.AddressList[0]}");
+                        Console.WriteLine($"Pinging {url} [{host.AddressList[0]}] with 32 bytes of data");
+                        //note: default packet sent by c#'s Send is 32 bytes
                     }
-                    PingReply reply = tweetie.Send(url, timeout);
+
                     if (reply.Status == IPStatus.Success)
                     {
-                        //time amount, bytes in package                  
-                        Console.WriteLine($"Reply from: {reply.Address.ToString()}: Send # {i}");
-                        Console.WriteLine($"Time: {reply.RoundtripTime} ... TTl: {reply.Options.Ttl}");
-                        //buffer??? >.>
-                        Console.WriteLine($"Buffer length:{reply.Buffer.Length}");
-                        Console.WriteLine("\n\n");
+                        //Console.WriteLine($"Testing: {host.Aliases[0]}");
+                        //send #  = i 
+
+                        //matching to windows output:
+                        Console.WriteLine($"Reply from {host.AddressList[0]}: bytes={reply.Buffer.Length} time={reply.RoundtripTime}ms TTL={reply.Options.Ttl}");
+                        packethaz++;
+
                         Thread.Sleep(timeout);
 
                     }
                     if (reply.Status == IPStatus.TimedOut)
                     {
                         Console.WriteLine($"Ping to {url} timed out");
+                        packetloss++;
                     }
+
                 }
+                Console.WriteLine("\n");
+                Console.WriteLine($"Ping Statistics for {url}");
+                Console.WriteLine($"\tPackets: Sent= {packetsent} , Received = {packethaz} , Lost = {packetloss} , {packetloss / packetsent}(%lost),");
+                Console.WriteLine($"\tApproximate rount trip times in mil-seconds: \n\tMinimum = , Maximum = , Average =");
             }
             catch (PingException e)
             {
-                if (e.InnerException == null)
-                {
-                    Console.WriteLine("Null error");
-                }
                 Console.WriteLine($"Error: Ping exception for: {url}");
                 Console.WriteLine(e.InnerException);
             }
             catch (SocketException)
             {
-                Console.WriteLine($"Error: Ping request could not find host {url}.  Please check the name and try again.");
+                Console.WriteLine($"Ping request could not find host {url}.  Please check the name and try again.");
             }
             catch (Exception e)
             {
@@ -89,6 +83,7 @@ namespace Pingaling
 
             Console.Write("oh hi. You are the weakest link.  Goodbye!");
             Console.ReadLine();
+
 
 
 
