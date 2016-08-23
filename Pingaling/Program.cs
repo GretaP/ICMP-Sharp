@@ -27,7 +27,10 @@ namespace Pingaling
             int packethaz = 0;
             int packetsent = 0;
             int count = 5;
-
+            long totaltime = new long();
+            long mintime = new long();
+            long maxtime = new long();
+          
             try
             {
                 for (int i = 0; i < count; i++)
@@ -45,12 +48,21 @@ namespace Pingaling
                     if (reply.Status == IPStatus.Success)
                     {
                         //Console.WriteLine($"Testing: {host.Aliases[0]}");
-                        //send #  = i 
+                        //Add some linux outputs (# of packet sent, DNS pointer record
+                        Console.Write($"Send # {packetsent}, ");
 
-                        //matching to windows output:
+                        // Match to windows output:
                         Console.WriteLine($"Reply from {host.AddressList[0]}: bytes={reply.Buffer.Length} time={reply.RoundtripTime}ms TTL={reply.Options.Ttl}");
-                        packethaz++;
 
+                        //For calculating statistics:
+                        totaltime += reply.RoundtripTime;
+                        if (reply.RoundtripTime < mintime || mintime == 0)
+                            mintime = reply.RoundtripTime;
+                        if (reply.RoundtripTime > maxtime)
+                            maxtime = reply.RoundtripTime;
+
+
+                        packethaz++;
                         Thread.Sleep(timeout);
 
                     }
@@ -64,12 +76,13 @@ namespace Pingaling
                 Console.WriteLine("\n");
                 Console.WriteLine($"Ping Statistics for {url}");
                 Console.WriteLine($"\tPackets: Sent= {packetsent} , Received = {packethaz} , Lost = {packetloss} , {packetloss / packetsent}(%lost),");
-                Console.WriteLine($"\tApproximate rount trip times in mil-seconds: \n\tMinimum = , Maximum = , Average =");
+                Console.WriteLine($"\tApproximate rount trip times in mil-seconds: \n\tMinimum = {mintime} , Maximum = {maxtime} , Average = {totaltime/packetsent}");
+
             }
             catch (PingException e)
             {
                 Console.WriteLine($"Error: Ping exception for: {url}");
-                Console.WriteLine(e.InnerException);
+                Console.WriteLine(e.Message);
             }
             catch (SocketException)
             {
@@ -80,12 +93,8 @@ namespace Pingaling
                 Console.WriteLine($"other exception: {e}");
             }
 
-
             Console.Write("oh hi. You are the weakest link.  Goodbye!");
             Console.ReadLine();
-
-
-
 
         }
     }
