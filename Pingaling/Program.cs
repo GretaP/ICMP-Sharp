@@ -23,9 +23,9 @@ namespace Pingaling
             Ping tweetie = new Ping();
             int timeout = 1000;
             string url = args[0];
-            int packetloss = 0;
-            int packethaz = 0;
-            int packetsent = 0;
+            int packetloss = new int();
+            int packethaz = new int();
+            int packetsent = new int();
             int count = 5;
             long totaltime = new long();
             long mintime = new long();
@@ -33,10 +33,23 @@ namespace Pingaling
           
             try
             {
-                for (int i = 0; i < count; i++)
-                {
-                    IPHostEntry host;
-                    host = Dns.GetHostEntry(url);
+                IPHostEntry host;
+                IPAddress ipaddy;
+                string realhost;
+                host = Dns.GetHostEntry(url);
+
+                realhost = (IPAddress.TryParse(args[0], out ipaddy) ? host.HostName : Dns.GetHostEntry(host.AddressList.First()).HostName);
+
+                /* above replaces all this >.> gir. and the doom song. yus.
+                //avoids two lookups >.>
+                if (IPAddress.TryParse(args[0], out ipaddy))
+                    realhost = host.HostName;
+                else
+                    realhost = Dns.GetHostEntry(host.AddressList.First()).HostName;
+                    */
+
+                for (int i=0; i < count; i++)
+                {                    
                     PingReply reply = tweetie.Send(url, timeout);
                     packetsent++;
                     if (i == 0)
@@ -47,12 +60,12 @@ namespace Pingaling
 
                     if (reply.Status == IPStatus.Success)
                     {
-                        //Console.WriteLine($"Testing: {host.Aliases[0]}");
-                        //Add some linux outputs (# of packet sent, DNS pointer record
-                        Console.Write($"Send # {packetsent}, ");
+                        if (!string.IsNullOrEmpty(realhost))
+                            Console.Write($"Reply from {realhost};");
+                        else
+                            Console.Write($"Reply from");
 
-                        // Match to windows output:
-                        Console.WriteLine($"Reply from {host.AddressList[0]}: bytes={reply.Buffer.Length} time={reply.RoundtripTime}ms TTL={reply.Options.Ttl}");
+                        Console.WriteLine($" {host.AddressList[0]}: seq={packetsent} bytes={reply.Buffer.Length} time={reply.RoundtripTime}ms TTL={reply.Options.Ttl}");
 
                         //For calculating statistics:
                         totaltime += reply.RoundtripTime;
@@ -60,7 +73,6 @@ namespace Pingaling
                             mintime = reply.RoundtripTime;
                         if (reply.RoundtripTime > maxtime)
                             maxtime = reply.RoundtripTime;
-
 
                         packethaz++;
                         Thread.Sleep(timeout);
@@ -82,7 +94,7 @@ namespace Pingaling
             catch (PingException e)
             {
                 Console.WriteLine($"Error: Ping exception for: {url}");
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"Error message: {e.Message}");
             }
             catch (SocketException)
             {
@@ -90,7 +102,7 @@ namespace Pingaling
             }
             catch (Exception e)
             {
-                Console.WriteLine($"other exception: {e}");
+                Console.WriteLine($"There was another error, see below: \n {e.Message}");
             }
 
             Console.Write("oh hi. You are the weakest link.  Goodbye!");
