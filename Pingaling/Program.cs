@@ -14,6 +14,9 @@ namespace Pingaling
     {
         static void Main(string[] args)
         {
+            //include more args.  yar har.    xD
+            //fix the switchie.  or switchie the switchie for candy.
+            //find buffer size
             if (args.Length == 0)
             {
                 Console.WriteLine("null error");
@@ -58,6 +61,7 @@ namespace Pingaling
                         //note: default packet sent by c#'s Send is 32 bytes
                     }
 
+                    //replace with switch/case dealing with different IP Status.  Common: Success, hardware, timed out , ttl expired
                     if (reply.Status == IPStatus.Success)
                     {
                         if (!string.IsNullOrEmpty(realhost))
@@ -78,15 +82,15 @@ namespace Pingaling
                         Thread.Sleep(timeout);
 
                     }
-                    if (reply.Status == IPStatus.TimedOut)
+                    //dont be a dumb dumb and do an if and another if on the same thingie >.>
+                    else if (reply.Status == IPStatus.TimedOut)
                     {
                         Console.WriteLine($"Ping to {url} timed out");
                         packetloss++;
                     }
 
                 }
-                Console.WriteLine("\n");
-                Console.WriteLine($"Ping Statistics for {url}");
+                Console.WriteLine($"\nPing Statistics for {url}");
                 Console.WriteLine($"\tPackets: Sent= {packetsent} , Received = {packethaz} , Lost = {packetloss} , {packetloss / packetsent}(%lost),");
                 Console.WriteLine($"\tApproximate rount trip times in mil-seconds: \n\tMinimum = {mintime} , Maximum = {maxtime} , Average = {totaltime/packetsent}");
 
