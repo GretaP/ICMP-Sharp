@@ -17,6 +17,7 @@ namespace Pingaling
             //include more args.  yar har.    xD
             //fix the switchie.  or switchie the switchie for candy.
             //find buffer size
+
             if (args.Length == 0)
             {
                 Console.WriteLine("null error");
@@ -24,32 +25,31 @@ namespace Pingaling
             }
 
             Ping tweetie = new Ping();
-            int timeout = 1000;
-            string url = args[0];
             int packetloss = new int();
             int packethaz = new int();
             int packetsent = new int();
-            int count = 5;
             long totaltime = new long();
             long mintime = new long();
             long maxtime = new long();
+
+            int timeout = 1000;
+            string url = args[0];
+            //number of times ping sent
+            int count = 5;
+
           
             try
             {
                 IPHostEntry host;
-                IPAddress ipaddy;
                 string realhost;
-                host = Dns.GetHostEntry(url);
 
-                realhost = (IPAddress.TryParse(args[0], out ipaddy) ? host.HostName : Dns.GetHostEntry(host.AddressList.First()).HostName);
-
-                /* above replaces all this >.> gir. and the doom song. yus.
-                //avoids two lookups >.>
-                if (IPAddress.TryParse(args[0], out ipaddy))
-                    realhost = host.HostName;
-                else
-                    realhost = Dns.GetHostEntry(host.AddressList.First()).HostName;
-                    */
+                try
+                {
+                    host = Dns.GetHostEntry(url);
+                    //ternary: if url is IP address, realhost matches.
+                    IPAddress ipaddy;
+                    realhost = (IPAddress.TryParse(args[0], out ipaddy) ? host.HostName : Dns.GetHostEntry(host.AddressList.First()).HostName);
+                    
 
                 for (int i=0; i < count; i++)
                 {                    
@@ -57,53 +57,76 @@ namespace Pingaling
                     packetsent++;
                     if (i == 0)
                     {
-                        Console.WriteLine($"Pinging {url} [{host.AddressList[0]}] with 32 bytes of data");
-                        //note: default packet sent by c#'s Send is 32 bytes
+                            //note: default packet sent by c#'s Send is 32 bytes
+                            Console.WriteLine($"Pinging {url} [{host.AddressList[0]}] with 32 bytes of data");
                     }
 
-                    //replace with switch/case dealing with different IP Status.  Common: Success, hardware, timed out , ttl expired
-                    if (reply.Status == IPStatus.Success)
+
+                    /*Checks Status Value.
+                     * Success: Prints values for ping,  keeps track of statistics
+                     * Timeout: packet loss, timeout message
+                     * Hardware Error: System exit, error message
+                     * Ttl expired: packet loss, ttl expired message
+                     */
+                    switch (reply.Status)
                     {
-                        if (!string.IsNullOrEmpty(realhost))
-                            Console.Write($"Reply from {realhost};");
-                        else
-                            Console.Write($"Reply from");
+                        //Checks if realhost has a value AND if the url is NOT an ip address , if so prints out reverse lookup
+                        case IPStatus.Success:
+                            if (!string.IsNullOrEmpty(realhost) && url != realhost)
+                                Console.Write($"Reply from {realhost};");
+                            else
+                                Console.Write($"Reply from");
 
-                        Console.WriteLine($" {host.AddressList[0]}: seq={packetsent} bytes={reply.Buffer.Length} time={reply.RoundtripTime}ms TTL={reply.Options.Ttl}");
+                            //Prints out following info about ping reply: (IP address, packet #, buffer length of reply, roundtrip time, TTL)
+                            Console.WriteLine($" {host.AddressList[0]}: seq={packetsent} bytes={reply.Buffer.Length} time={reply.RoundtripTime}ms TTL={reply.Options.Ttl}");
 
-                        //For calculating statistics:
-                        totaltime += reply.RoundtripTime;
-                        if (reply.RoundtripTime < mintime || mintime == 0)
-                            mintime = reply.RoundtripTime;
-                        if (reply.RoundtripTime > maxtime)
-                            maxtime = reply.RoundtripTime;
+                            //For calculating statistics:
+                            totaltime += reply.RoundtripTime;
+                            if (reply.RoundtripTime < mintime || mintime == 0)
+                                mintime = reply.RoundtripTime;
+                            if (reply.RoundtripTime > maxtime)
+                                maxtime = reply.RoundtripTime;
 
-                        packethaz++;
-                        Thread.Sleep(timeout);
+                            //increments counter for successful package recieved, and sleeps 
+                            packethaz++;
+                            Thread.Sleep(timeout);
+                            break;
 
-                    }
-                    //dont be a dumb dumb and do an if and another if on the same thingie >.>
-                    else if (reply.Status == IPStatus.TimedOut)
-                    {
-                        Console.WriteLine($"Ping to {url} timed out");
-                        packetloss++;
+                        case IPStatus.TimedOut:
+                            Console.WriteLine($"Ping to {url} timed out");
+                            packetloss++;
+                            break;
+
+                        case IPStatus.HardwareError:
+                            Console.WriteLine("Hardware Error.  Please check your internet settings/hardware and try again.");
+                            Environment.Exit(1);
+                            break;
+                        case IPStatus.TtlExpired:
+                            Console.WriteLine("TTL expired");
+                            packetloss++;
+                            break;
                     }
 
                 }
+
                 Console.WriteLine($"\nPing Statistics for {url}");
                 Console.WriteLine($"\tPackets: Sent= {packetsent} , Received = {packethaz} , Lost = {packetloss} , {packetloss / packetsent}(%lost),");
                 Console.WriteLine($"\tApproximate rount trip times in mil-seconds: \n\tMinimum = {mintime} , Maximum = {maxtime} , Average = {totaltime/packetsent}");
+                }
 
+                //handles a situation where a GetHostEntry (IP address lookup) fails.
+                catch (SocketException)
+                {
+                    Console.WriteLine($"Ping request could not find host {url}.  Please check the name and try again.");
+                }
             }
+
             catch (PingException e)
             {
                 Console.WriteLine($"Error: Ping exception for: {url}");
                 Console.WriteLine($"Error message: {e.Message}");
             }
-            catch (SocketException)
-            {
-                Console.WriteLine($"Ping request could not find host {url}.  Please check the name and try again.");
-            }
+
             catch (Exception e)
             {
                 Console.WriteLine($"There was another error, see below: \n {e.Message}");
