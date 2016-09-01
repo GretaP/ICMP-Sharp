@@ -32,12 +32,37 @@ namespace Pingaling
             long mintime = new long();
             long maxtime = new long();
 
+            
+            //testing new variables
+            int timeout = 1000;
+            //string url  needs to include args value
+            string url = "";
+            int count = new int();
+            
+            
+            //parse args into usable values
+            for (int i = 0; i <= args.Length; i++)
+            {
+                Console.WriteLine($"lala {i}");
+            }
+
+            //if this ends up being the check, get rid of args check.
+            if (string.IsNullOrEmpty(url))
+            {
+                Console.WriteLine("null error");
+                Environment.Exit(1);
+            }
+
+
+            /* OLD working variables to be used as default values
             int timeout = 1000;
             string url = args[0];
             //number of times ping sent
             int count = 5;
+            */
 
-          
+
+            //Nested try blocks allow program to check first for Socket errors from IPHostEntry, then for other errors 
             try
             {
                 IPHostEntry host;
@@ -109,10 +134,28 @@ namespace Pingaling
 
                 }
 
+                    //makes sure there is no division by 0 for the average time and percent of package lost statistics
+                    //??? if this is necessary - when timeout values were not good, this came up.  Otherwise keep totaltime / packetsent in Console.WriteLine.
+                    long averagetime = new long();
+                    long percentlost = new long();
+                    if (packetsent == 0)
+                    {
+                        averagetime = 0;
+                        percentlost = 100;
+                    }
+                    else
+                    {
+                        averagetime = totaltime / packetsent;
+                        percentlost = packetloss / packetsent;
+                    }
+                        
+                    
+                //print ping statistics
                 Console.WriteLine($"\nPing Statistics for {url}");
-                Console.WriteLine($"\tPackets: Sent= {packetsent} , Received = {packethaz} , Lost = {packetloss} , {packetloss / packetsent}(%lost),");
-                Console.WriteLine($"\tApproximate rount trip times in mil-seconds: \n\tMinimum = {mintime} , Maximum = {maxtime} , Average = {totaltime/packetsent}");
-                }
+                Console.WriteLine($"\tPackets: Sent= {packetsent} , Received = {packethaz} , Lost = {packetloss} , {percentlost}(%lost),");
+                Console.WriteLine($"\tApproximate rount trip times in mil-seconds: \n\tMinimum = {mintime} , Maximum = {maxtime} , Average = {averagetime}");
+                
+    }
 
                 //handles a situation where a GetHostEntry (IP address lookup) fails.
                 catch (SocketException)
