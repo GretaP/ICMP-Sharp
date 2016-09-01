@@ -42,20 +42,7 @@ namespace Pingaling
             {
                 //check for -c (count) -t (timeout)
 
-                /* probably not regex...
-                Regex regex = new Regex(args[i]);
-                Match usrcount = regex.Match(@"/(?i)^-c/");
-                Match usrtimeout = regex.Match("-t");
-                if (usrcount.Success)
-                {
-
-                }
-                if (usrtimeout.Success)
-                {
-                    
-                } 
-                */
-                if (args[i].StartsWith("-t"))
+               if (args[i].StartsWith("-t"))
                 {
                     string t = "";
                     if (args[i].Length > 2)
@@ -70,9 +57,13 @@ namespace Pingaling
                         i++;
                         t = args[i];
                     }
+      
                     try
                     {
+                        //or, tryparse and if bool is false, exit environment.
                         timeout = int.Parse(t);
+                        Console.WriteLine($"Timeout = {timeout}");
+                         
                     }
                     catch (Exception e)
                     {
@@ -80,18 +71,36 @@ namespace Pingaling
                         Console.WriteLine($"Testing: Error: {e.Message}");
                         Environment.Exit(1);
                     }
-                }   
+                    
+                }
+
+                /* want to add this to above [rather than below]:               if (args[i].StartsWith("-t") || args[i].StartsWith("-c"))
+
+                 *       try
+                    {
+                        //or, tryparse and if bool is false, exit environment.
+                        if (args[i].StartsWith("-t"))
+                        {
+                            timeout = int.Parse(t);
+                            Console.WriteLine($"Timeout = {timeout}");
+                        }
+                        else if (args[i].StartsWith("-c"))
+                        {
+                            count = int.Parse(t);
+                            Console.WriteLine($"Count = {count}");
+                        }
+                 */
+
+                //for testing the above get rid of this
                 else if (args[i].StartsWith("-c"))
                 {
 
                 }
+                //check for ipaddress or just string, might have problem if user types multiple strings
                 else
                 {
                     url = args[i];
                 }
-
-
-                //check for ipaddress or just string
             }
 
             //sets default values if the user does not enter anything for count (number of pings to be sent) or timeout (timeout value in millseconds)
@@ -107,8 +116,6 @@ namespace Pingaling
                 //add display with help and options
                 Environment.Exit(1);
             }
-
-
 
             //Nested try blocks allow program to check first for Socket errors from IPHostEntry, then for other errors 
             try
