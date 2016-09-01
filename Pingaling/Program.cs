@@ -7,6 +7,7 @@ using System.Net.NetworkInformation;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace Pingaling
 {
@@ -14,9 +15,8 @@ namespace Pingaling
     {
         static void Main(string[] args)
         {
-            //include more args.  yar har.    xD
-            //fix the switchie.  or switchie the switchie for candy.
             //find buffer size
+            //add manual/help page
 
             if (args.Length == 0)
             {
@@ -31,35 +31,83 @@ namespace Pingaling
             long totaltime = new long();
             long mintime = new long();
             long maxtime = new long();
-
             
-            //testing new variables
-            int timeout = 1000;
-            //string url  needs to include args value
-            string url = "";
+            //user controlled variables
+            int timeout = new int();
             int count = new int();
-            
-            
+            string url = "";
+
             //parse args into usable values
-            for (int i = 0; i <= args.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
-                Console.WriteLine($"lala {i}");
+                //check for -c (count) -t (timeout)
+
+                /* probably not regex...
+                Regex regex = new Regex(args[i]);
+                Match usrcount = regex.Match(@"/(?i)^-c/");
+                Match usrtimeout = regex.Match("-t");
+                if (usrcount.Success)
+                {
+
+                }
+                if (usrtimeout.Success)
+                {
+                    
+                } 
+                */
+                if (args[i].StartsWith("-t"))
+                {
+                    string t = "";
+                    if (args[i].Length > 2)
+                    {
+                        //removes -t from the string,
+                        t = args[i].Remove(0, 2);
+                        
+                    }
+                    else
+                    {
+                        //assumes that the value is stored in next argument, takes next argument
+                        i++;
+                        t = args[i];
+                    }
+                    try
+                    {
+                        timeout = int.Parse(t);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Your input to -t was invalid.  Please try again.");
+                        Console.WriteLine($"Testing: Error: {e.Message}");
+                        Environment.Exit(1);
+                    }
+                }   
+                else if (args[i].StartsWith("-c"))
+                {
+
+                }
+                else
+                {
+                    url = args[i];
+                }
+
+
+                //check for ipaddress or just string
             }
 
-            //if this ends up being the check, get rid of args check.
+            //sets default values if the user does not enter anything for count (number of pings to be sent) or timeout (timeout value in millseconds)
+            if (timeout == 0)
+                timeout = 1000;
+            if (count == 0)
+                count = 5;
+            
+            //Checks if a url was entered; if not will display options menu then exit
             if (string.IsNullOrEmpty(url))
             {
-                Console.WriteLine("null error");
+                Console.WriteLine("null error, please check your formatting and make sure you type in a url");
+                //add display with help and options
                 Environment.Exit(1);
             }
 
-
-            /* OLD working variables to be used as default values
-            int timeout = 1000;
-            string url = args[0];
-            //number of times ping sent
-            int count = 5;
-            */
 
 
             //Nested try blocks allow program to check first for Socket errors from IPHostEntry, then for other errors 
