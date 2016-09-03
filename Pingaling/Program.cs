@@ -15,10 +15,11 @@ namespace Pingaling
     {
         static void Main(string[] args)
         {
-            //find buffer size
-            //add manual/help page
+            
+                //find buffer size
+                //add manual/help page
 
-            if (args.Length == 0)
+                if (args.Length == 0)
             {
                 Console.WriteLine("null error");
                 Environment.Exit(1);
@@ -37,70 +38,37 @@ namespace Pingaling
             int count = new int();
             string url = "";
 
-            //parse args into usable values
-            for (int i = 0; i < args.Length; i++)
+            try
             {
-                //check for -c (count) -t (timeout)
 
-               if (args[i].StartsWith("-t"))
-                {
-                    string t = "";
-                    if (args[i].Length > 2)
+                //parse args into usable values
+                for (int i = 0; i < args.Length; i++)
+            {
+                    //check for -c (count) -t (timeout)
+
+
+
+                    switch (args[i])
                     {
-                        //removes -t from the string,
-                        t = args[i].Remove(0, 2);
-                        
+                        case "--count":
+                        case "-c":
+                            if (args.Length <= i || !int.TryParse(args[i + 1], out count))
+                                throw new ArgumentException();
+                            i++;
+                            continue;
+
+                        case "-t":
+                            if (args.Length <= i || !int.TryParse(args[i + 1], out timeout))
+                                throw new ArgumentException();
+                            i++;
+                            continue;
                     }
-                    else
-                    {
-                        //assumes that the value is stored in next argument, takes next argument
-                        i++;
-                        t = args[i];
-                    }
-      
-                    try
-                    {
-                        //or, tryparse and if bool is false, exit environment.
-                        timeout = int.Parse(t);
-                        Console.WriteLine($"Timeout = {timeout}");
-                         
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("Your input to -t was invalid.  Please try again.");
-                        Console.WriteLine($"Testing: Error: {e.Message}");
-                        Environment.Exit(1);
-                    }
-                    
-                }
-
-                /* want to add this to above [rather than below]:               if (args[i].StartsWith("-t") || args[i].StartsWith("-c"))
-
-                 *       try
-                    {
-                        //or, tryparse and if bool is false, exit environment.
-                        if (args[i].StartsWith("-t"))
-                        {
-                            timeout = int.Parse(t);
-                            Console.WriteLine($"Timeout = {timeout}");
-                        }
-                        else if (args[i].StartsWith("-c"))
-                        {
-                            count = int.Parse(t);
-                            Console.WriteLine($"Count = {count}");
-                        }
-                 */
-
-                //for testing the above get rid of this
-                else if (args[i].StartsWith("-c"))
-                {
-
-                }
-                //check for ipaddress or just string, might have problem if user types multiple strings
-                else
-                {
                     url = args[i];
-                }
+
+                
+                
+//value = args[i].remove(0,2);
+
             }
 
             //sets default values if the user does not enter anything for count (number of pings to be sent) or timeout (timeout value in millseconds)
@@ -117,9 +85,8 @@ namespace Pingaling
                 Environment.Exit(1);
             }
 
-            //Nested try blocks allow program to check first for Socket errors from IPHostEntry, then for other errors 
-            try
-            {
+                //Nested try blocks allow program to check first for Socket errors from IPHostEntry, then for other errors 
+
                 IPHostEntry host;
                 string realhost;
 
@@ -219,6 +186,11 @@ namespace Pingaling
                 }
             }
 
+            catch (ArgumentException)
+            {
+                Console.WriteLine("Incorrect syntax.");
+                Environment.Exit(1); 
+            }
             catch (PingException e)
             {
                 Console.WriteLine($"Error: Ping exception for: {url}");
