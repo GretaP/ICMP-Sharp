@@ -1,4 +1,4 @@
-# Pingaling
+# ICMP-Sharp
 
 Clone of a standard ICMP echo tool written in C#
 
